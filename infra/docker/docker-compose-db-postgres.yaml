@@ -1,0 +1,74 @@
+version: '3'
+
+services:
+
+  qrks-poc1-postgres:
+    image: postgres:13-alpine
+    container_name: qrks-poc1-postgres
+    volumes:
+      - ~/.docker/poc/qrks-poc1-postgres:/data/postgres
+      # - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: qrks-poc1-db
+      POSTGRES_USER: qrks_poc1_user
+      POSTGRES_PASSWORD: qrks_poc1_user_pass
+      PGDATA: /data/postgres
+    networks:
+      - qrks-poc1-net
+
+  qrks-poc1-pgadmin:
+    image: dpage/pgadmin4:4.30
+    container_name: qrks-poc1-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: sameerean@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: secret
+      PGADMIN_LISTEN_PORT: 80
+    ports:
+      - "8085:80"
+    depends_on:
+      - qrks-poc1-postgres
+    volumes:
+      - ~/.docker/poc/qrks-poc1-pgadmin:/var/lib/pgadmin
+    # links:
+    #   - "db:pgsql-server"
+    networks:
+      - qrks-poc1-net
+  
+       
+  # quarkus-app:
+  #   image: maven
+  #   volumes: 
+  #     - "../:/app"
+  #     - "~/.m2:/root/.m2"
+  #   ports:
+  #     - 5015:5005 # Debug port
+  #     - 8182:8080
+  #   working_dir: /app
+  #   command: "mvn quarkus:dev"
+  #   container_name: qrks-poc1-app
+  #   depends_on:
+  #     - qrks-poc1-postgres
+  #   networks:
+  #     - qrks-poc1-net
+
+
+  portainer-service:
+    image: portainer/portainer
+    container_name: qrks-poc1-portainer
+    command: -H unix:///var/run/docker.sock
+    restart: always
+    environment:
+      - VIRTUAL_HOST=portainer.poc1.com
+      - VIRTUAL_PORT=9010
+    volumes:
+      - ~/.docker/poc/qrks-poc1-portainer:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      # - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8114:9000"
+    networks:
+      - qrks-poc1-net
+
+networks:
+  qrks-poc1-net:

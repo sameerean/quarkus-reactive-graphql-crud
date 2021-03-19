@@ -1,0 +1,95 @@
+version: '3'
+
+services:
+
+  mongo-db:
+    image: mongo
+    restart: always
+    container_name: quarkus-mongo-reactive-db
+    ports:
+#       - 27017:27017
+      - '27017-27019:27017-27019'
+    environment:
+      - MONGO_INITDB_DATABASE=qmrappdb
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+    volumes:
+      # seeding scripts
+      - ./mongo-entrypoint:/docker-entrypoint-initdb.d
+#       - ./mongo-entrypoint/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+#       - ./volumes/mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      # named volumes
+      - mongodb:/data/db
+      - mongoconfig:/data/configdb
+    networks:
+      - quarkus-samples-network
+
+  mongo-express:
+    image: mongo-express
+    container_name: quarkus-mongo-reactive-mongexpress
+    ports:
+      - 8083:8081
+    environment:
+      - ME_CONFIG_OPTIONS_EDITORTHEME=ambiance
+      - ME_CONFIG_BASICAUTH_USERNAME=qmruser
+      - ME_CONFIG_BASICAUTH_PASSWORD=qmrpassword
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=admin
+      - ME_CONFIG_MONGODB_SERVER=mongo-db
+    links:
+      - mongo-db:mongo
+    depends_on:
+      - mongo-db
+    networks:
+      - quarkus-samples-network
+
+
+#   quarkus-app:
+#     build:
+#       context: ../
+#       dockerfile: src/main/docker/Dockerfile.jvm
+#     image: sameerean/quarkus-mongo-reactive:0.1
+#     container_name: quarkus-mongo-reactive-app
+#     depends_on:
+#       - mongo-db
+#     ports:
+#       - 8082:8080
+#     networks:
+#       - quarkus-samples-network
+
+       
+  quarkus-app:
+    image: maven
+    volumes: 
+      - "../:/app"
+      - "~/.m2:/root/.m2"
+    ports:
+      - 5005:5005 # Debug port
+      - 8082:8080
+    working_dir: /app
+    command: "mvn quarkus:dev"
+    container_name: quarkus-mongo-reactive-app
+    depends_on:
+      - mongo-db
+    networks:
+      - quarkus-samples-network
+
+       
+#  Portainer
+  portainerservice:
+    image: portainer/portainer
+    volumes:
+      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8084:9000"
+
+volumes:
+  portainer_data:
+  mongodb:
+  mongoconfig:
+
+
+
+networks:
+  quarkus-samples-network:
