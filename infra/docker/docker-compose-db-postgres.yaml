@@ -36,21 +36,21 @@ services:
       - qrks-poc1-net
   
        
-  # quarkus-app:
-  #   image: maven
-  #   volumes: 
-  #     - "../:/app"
-  #     - "~/.m2:/root/.m2"
-  #   ports:
-  #     - 5015:5005 # Debug port
-  #     - 8182:8080
-  #   working_dir: /app
-  #   command: "mvn quarkus:dev"
-  #   container_name: qrks-poc1-app
-  #   depends_on:
-  #     - qrks-poc1-postgres
-  #   networks:
-  #     - qrks-poc1-net
+  quarkus-app:
+    image: maven
+    volumes: 
+      - "../../:/app"
+      - "~/.m2:/root/.m2"
+    ports:
+      - "8182:8080"
+      - "5015:5005" # Debug port
+    working_dir: /app
+    command: "mvn quarkus:dev -Dquarkus.http.host=0.0.0.0"
+    container_name: qrks-poc1-app
+    depends_on:
+      - qrks-poc1-postgres
+    networks:
+      - qrks-poc1-net
 
 
   portainer-service:

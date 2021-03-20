@@ -1,4 +1,4 @@
-package hub.poc.quarkus.reactivegraphqlcrud;
+package hub.poc.quarkus.reactivegraphqlcrud.hello;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
