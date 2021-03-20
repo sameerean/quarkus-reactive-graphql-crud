@@ -6,13 +6,16 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.jboss.logging.Logger;
+
 import hub.poc.quarkus.reactivegraphqlcrud.domain.Product;
 import io.smallrye.mutiny.Uni;
 
 @ApplicationScoped
 @Transactional
 public class ProductService {
-    
+    private static final Logger logger = Logger.getLogger(ProductService.class.getName());
+
     @Inject
     private ProductRepo productRepo;
 
