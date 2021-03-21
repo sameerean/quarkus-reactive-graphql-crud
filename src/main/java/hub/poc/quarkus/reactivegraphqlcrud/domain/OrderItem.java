@@ -1,5 +1,6 @@
 package hub.poc.quarkus.reactivegraphqlcrud.domain;
 
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -10,6 +11,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
@@ -27,7 +29,8 @@ public class OrderItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PARENT_ORDER_ID", nullable = false)
-    @JsonIgnore
+    @JsonBackReference
+    @JsonbTransient
     private Order parentOrder;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -69,9 +72,10 @@ public class OrderItem {
     public void setInstructions(String instructions) {
         this.instructions = instructions;
     }
+    
     @Override
     public String toString() {
-        return "OrderItem [id=" + id + ", instructions=" + instructions + ", parentOrder=" + parentOrder
+        return "OrderItem [id=" + id + ", instructions=" + instructions
                 + ", product=" + product + ", quantity=" + quantity + "]";
     }
 

@@ -2,9 +2,10 @@ package hub.poc.quarkus.reactivegraphqlcrud.domain;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,6 +20,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(
@@ -43,10 +46,10 @@ public class Order {
     private Date orderDateTime;
     private String currentStatus;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parentOrder")
-    @JsonbTransient
-    private List<OrderItem> items = new ArrayList<>();
 
+    @OneToMany(cascade={CascadeType.ALL}, fetch = FetchType.EAGER, mappedBy = "parentOrder", orphanRemoval = true)
+    @JsonManagedReference
+    private List<OrderItem> items = new ArrayList<>();
     
     public Long getId() {
         return id;
@@ -82,7 +85,6 @@ public class Order {
     public void setCurrentStatus(String currentStatus) {
         this.currentStatus = currentStatus;
     }
-
     public List<OrderItem> getItems() {
         return items;
     }
@@ -119,6 +121,7 @@ public class Order {
             return false;
         return true;
     }
+
     @Override
     public String toString() {
         return "Order [currentStatus=" + currentStatus + ", customer=" + customer + ", id=" + id + ", items=" + items

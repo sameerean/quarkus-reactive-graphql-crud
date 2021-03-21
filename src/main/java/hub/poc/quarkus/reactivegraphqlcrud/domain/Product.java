@@ -46,6 +46,8 @@ public class Product {
     public String getBrandName() {
         return brandName;
     }
+
+    
     public void setBrandName(String brandName) {
         this.brandName = brandName;
     }
@@ -68,7 +70,7 @@ public class Product {
         result = prime * result + ((id == null) ? 0 : id.hashCode());
         return result;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
