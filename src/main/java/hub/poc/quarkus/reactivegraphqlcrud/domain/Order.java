@@ -1,14 +1,19 @@
 package hub.poc.quarkus.reactivegraphqlcrud.domain;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import javax.json.bind.annotation.JsonbTransient;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -23,16 +28,26 @@ import javax.persistence.UniqueConstraint;
     )
 public class Order {
 
-    private Long id;
-    private String refNumber;
-    private Customer customer;
-    private Date orderDateTime;
-    private String currentStatus;
-
-    
     @Id
     @SequenceGenerator(name = "orderIdSeq", sequenceName = "orderIdSeq", allocationSize = 1, initialValue = 1)
     @GeneratedValue(generator = "orderIdSeq")
+    private Long id;
+
+    @Column(name = "REF_NO")
+    private String refNumber;
+
+    @ManyToOne
+    @JoinColumn(name = "CUSTOMER_ID")
+    private Customer customer;
+
+    private Date orderDateTime;
+    private String currentStatus;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parentOrder")
+    @JsonbTransient
+    private List<OrderItem> items = new ArrayList<>();
+
+    
     public Long getId() {
         return id;
     }
@@ -40,7 +55,6 @@ public class Order {
         this.id = id;
     }
 
-    @Column(name = "REF_NO")
     public String getRefNumber() {
         return refNumber;
     }
@@ -48,8 +62,6 @@ public class Order {
         this.refNumber = refNumber;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "CUSTOMER_ID")
     public Customer getCustomer() {
         return customer;
     }
@@ -70,11 +82,14 @@ public class Order {
     public void setCurrentStatus(String currentStatus) {
         this.currentStatus = currentStatus;
     }
-    @Override
-    public String toString() {
-        return "Order [currentStatus=" + currentStatus + ", customer=" + customer + ", id=" + id + ", orderDateTime="
-                + orderDateTime + ", reFNumber=" + refNumber + "]";
+
+    public List<OrderItem> getItems() {
+        return items;
     }
+    public void setItems(List<OrderItem> items) {
+        this.items = items;
+    }
+        
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -104,7 +119,11 @@ public class Order {
             return false;
         return true;
     }
-  
+    @Override
+    public String toString() {
+        return "Order [currentStatus=" + currentStatus + ", customer=" + customer + ", id=" + id + ", items=" + items
+                + ", orderDateTime=" + orderDateTime + ", refNumber=" + refNumber + "]";
+    }
     
     
 }

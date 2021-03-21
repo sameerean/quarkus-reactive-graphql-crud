@@ -11,6 +11,7 @@ import org.jboss.logging.Logger;
 
 import hub.poc.quarkus.reactivegraphqlcrud.customer.CustomerRepo;
 import hub.poc.quarkus.reactivegraphqlcrud.domain.Order;
+import hub.poc.quarkus.reactivegraphqlcrud.product.ProductRepo;
 import io.smallrye.mutiny.Uni;
 
 @ApplicationScoped
@@ -25,6 +26,9 @@ public class OrderService {
     @Inject
     private CustomerRepo customerRepo;
 
+    @Inject
+    private ProductRepo productRepo;
+
     public Uni<List<Order>> findAllOrders() {
         return orderRepo.findAll().list();
     }
@@ -32,9 +36,24 @@ public class OrderService {
     public Uni<Order> createOrder(Order order) {
         order.setOrderDateTime(new Date());
         return this.customerRepo.findById(order.getCustomer().getId())
-            .onItem().transform(cust -> { order.setCustomer(cust); return cust;})
-            .chain(() -> this.orderRepo.persist(order).chain(orderRepo :: flush).onItem().transform(none -> order));
-        // return this.orderRepo.persist(order).chain(orderRepo :: flush).onItem().transform(none -> order);
+            .onItem().transform(cust -> { 
+                order.setCustomer(cust); 
+                if(order.getItems() != null) {
+                    order.getItems().forEach(it -> {
+                        it.setParentOrder(order);
+                        if(it.getProduct() != null && it.getProduct().getId() != null) {
+                            this.productRepo.findById(it.getProduct().getId())
+                                .onItem().transform(prd -> {
+                                    it.setProduct(prd);
+                                    return prd;
+                                });
+                        }
+                    });
+                }
+                return cust;
+            })
+            .chain(() -> this.orderRepo.persist(order)
+                .chain(orderRepo :: flush).onItem().transform(none -> order));
     }
 
     public Uni<Order> updateOrderById(Long id, Order order) {
